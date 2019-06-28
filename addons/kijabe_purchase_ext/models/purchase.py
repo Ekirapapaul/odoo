@@ -13,20 +13,15 @@ Main feature:
    Finanace manager approve the LPO, check for double validation process, and send to ED for approval 
    if the amount exceed the amount set in double validation, otherwise approve the LPO by Finance and notify the initiator.
 '''
+
+
 class purchase(models.Model):
     _inherit = 'purchase.order'
     # Add new field
-    x_division = fields.Selection(
-        [
-            ('MED', 'MED'),
-            ('NUR', 'NUR'),
-            ('CCK', 'CCK'),
-            ('SSD', 'SSD'),
-            ('HRD', 'HRD'),
-            ('FIN', 'FIN'),
-            ('OPS', 'OPS')
-        ],
-        string=u'Division')
+    x_dept_id = fields.Many2one(
+        'purchase.department', 'Department', required=True)
+    x_division = fields.Char('Division', readonly=True, store=True)
+
     # Modify existing fields display name
     partner_id = fields.Many2one(string=u'Supplier')
     partner_ref = fields.Char(string=u'Supplier Code')
@@ -35,12 +30,25 @@ class purchase(models.Model):
         ('sent', 'RFQ Sent'),
         ('p_m_approve', 'To Procurement'),
         ('f_m_approve', 'To Finance'),
-        ('o_m_approve','To Operations'),
+        ('o_m_approve', 'To Operations'),
         ('ceo_approve', 'To ED'),
         ('purchase', 'Purchase Order'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+    irf_ids = fields.Many2one("purchase.internal.requisition", "IRF Reference")
+
+    @api.onchange('x_dept_id')
+    def _populate_div(self):
+        self.x_division = self.x_dept_id.dep_id.name
+        return {}
+
+    @api.model
+    def create(self, vals):
+        division = self.env["purchase.division"].search(
+            [['department_ids', '=', vals['x_dept_id']]])
+        vals['x_division'] = division.name
+        return super(purchase, self).create(vals)
 
     @api.one
     def executive_director_approval(self):
@@ -62,21 +70,26 @@ class purchase(models.Model):
                 order.button_approve()
                 self.notifyInitiator("Operations Manager")
             else:
-                order.write({'state': 'ceo_approve','date_approve': fields.Date.context_today(self)})
-                self.notifyUserInGroup("kijabe_purchase_ext.purchase_director_id")
+                order.write({'state': 'ceo_approve',
+                             'date_approve': fields.Date.context_today(self)})
+                self.notifyUserInGroup(
+                    "kijabe_purchase_ext.purchase_director_id")
                 self.notifyInitiator("Operations Manager")
 
         return True
+
     @api.one
     def financial_manager_approval(self):
-        self.write({'state': 'o_m_approve','date_approve': fields.Date.context_today(self)})
+        self.write({'state': 'o_m_approve',
+                    'date_approve': fields.Date.context_today(self)})
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
         self.notifyInitiator("Financial Manager")
         return True
 
     @api.one
     def procurement_manager_approval(self):
-        self.write({'state': 'f_m_approve','date_approve': fields.Date.context_today(self)})
+        self.write({'state': 'f_m_approve',
+                    'date_approve': fields.Date.context_today(self)})
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
         self.notifyInitiator("Procurement Manager")
         return True
@@ -85,22 +98,26 @@ class purchase(models.Model):
     def button_confirm(self):
         for order in self:
             if order.state in ['draft', 'sent']:
-                self.write({'state': 'p_m_approve','date_approve': fields.Date.context_today(self)})
-                self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
+                self.write({'state': 'p_m_approve',
+                            'date_approve': fields.Date.context_today(self)})
+                self.notifyUserInGroup(
+                    "kijabe_purchase_ext.purchase_leader_procurement_id")
         return True
-        
+
     @api.multi
-    def notifyUserInGroup(self,group_ext_id):
+    def notifyUserInGroup(self, group_ext_id):
         group = self.env.ref(group_ext_id)
         for user in group.users:
-            _logger.error("Notify User `%s` In Group `%s`" %(str(user.login), group.name))
+            _logger.error("Notify User `%s` In Group `%s`" %
+                          (str(user.login), group.name))
             self.sendToManager(user.login, self[0].name, user.name)
         return True
 
     @api.multi
-    def notifyInitiator(self,approver):
-        user = self.env["res.users"].search([['id', '=', self[0].create_uid.id]])
-        self.sendToInitiator(user.login, self[0].name, user.name,approver)
+    def notifyInitiator(self, approver):
+        user = self.env["res.users"].search(
+            [['id', '=', self[0].create_uid.id]])
+        self.sendToInitiator(user.login, self[0].name, user.name, approver)
         return True
 
     @api.multi
@@ -120,7 +137,7 @@ class purchase(models.Model):
         return True
 
     @api.multi
-    def sendToInitiator(self, recipient, po, name,approver):
+    def sendToInitiator(self, recipient, po, name, approver):
         url = self.env['ir.config_parameter'].get_param('web.base.url')
         mail_pool = self.env['mail.mail']
         values = {}
@@ -130,7 +147,7 @@ class purchase(models.Model):
         values.update({'email_to': recipient})
         values.update({'body_html':
                        'To ' + name + ',<br>'
-                       + 'LPO No. ' + po + ' has been Approved by '+ str(approver)+'. You can find the details: '+url})
+                       + 'LPO No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
 
         self.env['mail.mail'].create(values).send()
         return True

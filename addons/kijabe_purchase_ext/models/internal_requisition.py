@@ -12,13 +12,14 @@ class internal_requisition(models.Model):
     _inherit = ['mail.thread', 'ir.needaction_mixin']
     _description = "Internal Requisition"
 
-    ir_dept_id = fields.Many2one('purchase.department', 'Department')
+    ir_dept_id = fields.Many2one('purchase.department', 'Department', required=True)
     ir_dept_code = fields.Char('Department Code', readonly=True, store=True)
-    ir_dept_head_id = fields.Many2one('res.users', 'Department Head')
+    ir_dept_head_id = fields.Char('Department Head', readonly=True, store=True)
     ir_req_date = fields.Datetime(
         string='Date', required=True, index=True, default=fields.Datetime.now)
     ir_div_id = fields.Char('Division', readonly=True, store=True)
     ir_div_code = fields.Char('Division Code', readonly=True, store=True)
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'IRF Sent'),
@@ -38,10 +39,12 @@ class internal_requisition(models.Model):
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
     date_approve = fields.Date(
         'Approval Date', readonly=1, index=True, copy=False)
+    
 
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
         self.ir_dept_code = self.ir_dept_id.dep_code
+        self.ir_dept_head_id = self.ir_dept_id.dep_head_id.name
         self.ir_div_id = self.ir_dept_id.dep_id.name
         self.ir_div_code = self.ir_dept_id.dep_id.div_code
         return {}
@@ -54,6 +57,7 @@ class internal_requisition(models.Model):
             [['department_ids', '=', vals['ir_dept_id']]])
 
         vals['ir_dept_code'] = department.dep_code
+        vals['ir_dept_head_id'] = department.dep_head_id.name
         vals['ir_div_id'] = division.name
         vals['ir_div_code'] = division.div_code
 
@@ -132,7 +136,7 @@ class internal_requisition(models.Model):
         values.update({'email_to': recipient})
         values.update({'body_html':
                        'To Manager ' + name + ',<br>'
-                       + 'IRO No. ' + po + ' has been created and requires your approval. You can find the details to approve here. '+url})
+                       + 'IRF No. ' + po + ' has been created and requires your approval. You can find the details to approve here. '+url})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -155,7 +159,7 @@ class internal_requisition(models.Model):
         values.update({'email_to': recipient})
         values.update({'body_html':
                        'To ' + name + ',<br>'
-                       + 'IRO No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
+                       + 'IRF No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -163,8 +167,6 @@ class internal_requisition(models.Model):
 
 class purchase_internal_requisition_items(models.Model):
     _name = "purchase.internal.requisition.item"
-    #item_id = fields.Many2one('product.product', string='Item', domain=[
-       # ('purchase_ok', '=', True)], change_default=True, required=True)
     ir_item_id = fields.Many2one('purchase.internal.requisition')
     item_id = fields.Many2one('product.template', string='Item')
     product_qty = fields.Float(string='Quantity', digits=dp.get_precision(

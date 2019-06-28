@@ -8,7 +8,13 @@
         <field name="arch" type="xml">
             <!-- Adding the new field created in our model -->
             <field name="date_order" position="after">
+                <field name="x_dept_id" />
                 <field name="x_division" />
+                
+            </field>
+            <!-- partner_ref -->
+            <field name="partner_ref" position="after">
+                <field name="irf_ids" />
             </field>
             <!-- Modififying the existing field to make it invisible -->
             <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="attributes">
@@ -26,7 +32,9 @@
         <field name="arch" type="xml">
             <!-- Add new column (x_division) -->
             <field name="date_order" position="after">
+                <field name="x_dept_id" />
                 <field name="x_division" />
+                <field name="irf_ids" />
             </field>
         </field>
     </record>
@@ -44,9 +52,9 @@
             </button>
             <button name="button_confirm" position="before">
                 <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="p_m_approve" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
-                <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id"/>
-                <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="o_m_approve" groups="kijabe_purchase_ext.purchase_operation_id"/>
-                <button name="executive_director_approval" type="object" string="Executive Director Approval" states="ceo_approve" groups="kijabe_purchase_ext.purchase_director_id"/>
+                <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
+                <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="o_m_approve" groups="kijabe_purchase_ext.purchase_operation_id" />
+                <button name="executive_director_approval" type="object" string="Executive Director Approval" states="ceo_approve" groups="kijabe_purchase_ext.purchase_director_id" />
             </button>
         </field>
     </record>

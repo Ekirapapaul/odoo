@@ -18,3 +18,4 @@ class department(models.Model):
     dep_id = fields.Many2one('purchase.division')
     name = fields.Char('Name')
     dep_code = fields.Char('Code')
+    dep_head_id = fields.Many2one('res.users', 'Department Head')

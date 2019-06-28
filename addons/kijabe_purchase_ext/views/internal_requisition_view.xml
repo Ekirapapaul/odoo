@@ -11,10 +11,10 @@
                     <button name="action_irf_send" states="sent" string="Re-Send IRF by Email" type="object" context="{'send_irf':True}" />
                     <button name="print_quotation" string="Print IRF" type="object" states="draft" class="oe_highlight" groups="base.group_user" />
                     <button name="print_quotation" string="Print IRF" type="object" states="sent" groups="base.group_user" /> -->
-                    <button name="button_confirm" type="object" states="draft" string="Confirm IRO" id="draft_confirm" />
-                    <button name="button_confirm" type="object" states="sent" string="Confirm IRO" class="oe_highlight" id="bid_confirm" />
-                    <button name="button_approve" type="object" states="to approve" string="Approve IRO" class="oe_highlight" groups="purchase.group_purchase_manager" />
-                    <!-- <button name="action_irf_send" states="purchase,done" string="Send IRO by Email" type="object" context="{'send_irf':False}" /> -->
+                    <button name="button_confirm" type="object" states="draft" string="Confirm IRF" id="draft_confirm" />
+                    <button name="button_confirm" type="object" states="sent" string="Confirm IRF" class="oe_highlight" id="bid_confirm" />
+                    <button name="button_approve" type="object" states="to approve" string="Approve IRF" class="oe_highlight" groups="purchase.group_purchase_manager" />
+                    <!-- <button name="action_irf_send" states="purchase,done" string="Send IRF by Email" type="object" context="{'send_irf':False}" /> -->
                     <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
                     <button name="button_cancel" states="f_m_approve,o_m_approve,p_m_approve,draft,purchase" string="Cancel" type="object" />
                     <button name="button_done" type="object" string="Lock" states="purchase" />
@@ -67,28 +67,6 @@
             </form>
         </field>
     </record>
-    <record id="purchase_department_form_view" model="ir.ui.view">
-        <field name="name">purchase.department.form.view</field>
-        <field name="model">purchase.department</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <div class="oe_title">
-                        <label string="Department" />
-                    </div>
-                    <group>
-                        <group>
-                            <field name="name" />
-                        </group>
-                        <group>
-                            <field name="dep_code" />
-                        </group>
-                    </group>
-                    
-                </sheet>
-            </form>
-        </field>
-    </record>
     <record id="purchase_division_form_view" model="ir.ui.view">
         <field name="name">purchase.division.form.view</field>
         <field name="model">purchase.division</field>
@@ -112,6 +90,7 @@
                                 <tree editable="bottom">
                                     <field name="name" />
                                     <field name="dep_code" />
+                                    <field name="dep_head_id" />
                                 </tree>
                             </field>
                         </page>
@@ -128,7 +107,7 @@
         <field name="arch" type="xml">
             <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Internal Requisition Orders">
                 <field name="message_unread" invisible="1" />
-                <field name="name"/>
+                <field name="name" />
                 <field name="ir_dept_id" />
                 <field name="ir_dept_head_id" />
                 <field name="ir_dept_code" />
@@ -136,6 +115,16 @@
                 <field name="ir_div_id" />
                 <field name="ir_div_code" />
                 <field name="state" />
+            </tree>
+        </field>
+    </record>
+    <record id="purchase_division_tree_view" model="ir.ui.view">
+        <field name="name">purchase.division.tree.view</field>
+        <field name="model">purchase.division</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="div_code" />
             </tree>
         </field>
     </record>

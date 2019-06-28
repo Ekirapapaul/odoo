@@ -8,6 +8,8 @@
     'data': 
         [
             'security/purchase_groups.xml',
-            'views/kijabe_purchase_ext_view.xml'
+            'security/ir.model.access.csv',
+            'views/kijabe_purchase_ext_view.xml',
+            'views/internal_requisition_view.xml'
         ],
 }

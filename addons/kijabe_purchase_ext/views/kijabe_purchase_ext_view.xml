@@ -45,15 +45,15 @@
         <field name="inherit_id" ref="purchase.purchase_order_form" />
         <field name="arch" type="xml">
             <field name="state" position="attributes">
-                <attribute name="statusbar_visible">p_m_approve,f_m_approve,o_m_approve,draft,sent,purchase</attribute>
+                <attribute name="statusbar_visible">p_m_approve,o_m_approve,f_m_approve,draft,sent,purchase</attribute>
             </field>
             <button name="button_cancel" position="attributes">
-                <attribute name="states">p_m_approve,f_m_approve,o_m_approve,ceo_approve,draft,to approve,sent,purchase</attribute>
+                <attribute name="states">p_m_approve,o_m_approve,f_m_approve,ceo_approve,draft,to approve,sent,purchase</attribute>
             </button>
             <button name="button_confirm" position="before">
                 <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="p_m_approve" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
-                <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
                 <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="o_m_approve" groups="kijabe_purchase_ext.purchase_operation_id" />
+                <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
                 <button name="executive_director_approval" type="object" string="Executive Director Approval" states="ceo_approve" groups="kijabe_purchase_ext.purchase_director_id" />
             </button>
         </field>

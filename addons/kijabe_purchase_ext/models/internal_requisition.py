@@ -23,8 +23,8 @@ class internal_requisition(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'IRF Sent'),
-        ('f_m_approve', 'Finance'),
         ('o_m_approve', 'Operations'),
+        ('f_m_approve', 'Finance'),
         ('p_m_approve', 'Procurement'),
         ('purchase', 'Approved'),
         ('done', 'Approved & Locked'),
@@ -70,25 +70,25 @@ class internal_requisition(models.Model):
     def button_confirm(self):
         for order in self:
             if order.state in ['draft', 'sent']:
-                self.write({'state': 'f_m_approve',
+                self.write({'state': 'o_m_approve',
                             'date_approve': fields.Date.context_today(self)})
                 self.notifyUserInGroup(
-                    "kijabe_purchase_ext.purchase_finance_id")
+                    "kijabe_purchase_ext.purchase_operation_id")
         return True
 
     @api.one
     def financial_manager_approval(self):
-        self.write({'state': 'o_m_approve',
+        self.write({'state': 'p_m_approve',
                     'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
+        self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
         return True
 
     @api.one
     def operations_manager_approval(self):
-        self.write({'state': 'p_m_approve',
+        self.write({'state': 'f_m_approve',
                     'date_approve': fields.Date.context_today(self)})
         self.notifyUserInGroup(
-            "kijabe_purchase_ext.purchase_leader_procurement_id")
+            "kijabe_purchase_ext.purchase_finance_id")
         return True
 
     @api.one

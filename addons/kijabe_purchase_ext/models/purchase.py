@@ -29,8 +29,8 @@ class purchase(models.Model):
         ('draft', 'RFQ'),
         ('sent', 'RFQ Sent'),
         ('p_m_approve', 'To Procurement'),
-        ('f_m_approve', 'To Finance'),
         ('o_m_approve', 'To Operations'),
+        ('f_m_approve', 'To Finance'),
         ('ceo_approve', 'To ED'),
         ('purchase', 'Purchase Order'),
         ('done', 'Locked'),
@@ -57,9 +57,9 @@ class purchase(models.Model):
         return True
 
     @api.one
-    def operations_manager_approval(self):
+    def financial_manager_approval(self):
         for order in self:
-            if order.state != 'o_m_approve':
+            if order.state != 'f_m_approve':
                 continue
             order._add_supplier_to_product()
             # Deal with double validation process
@@ -68,29 +68,29 @@ class purchase(models.Model):
                         and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
                     or order.user_has_groups('purchase.group_purchase_manager'):
                 order.button_approve()
-                self.notifyInitiator("Operations Manager")
+                self.notifyInitiator("Financial Manager")
             else:
                 order.write({'state': 'ceo_approve',
                              'date_approve': fields.Date.context_today(self)})
                 self.notifyUserInGroup(
                     "kijabe_purchase_ext.purchase_director_id")
-                self.notifyInitiator("Operations Manager")
+                self.notifyInitiator("Financial Manager")
 
         return True
 
     @api.one
-    def financial_manager_approval(self):
-        self.write({'state': 'o_m_approve',
+    def operations_manager_approval(self):
+        self.write({'state': 'f_m_approve',
                     'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
-        self.notifyInitiator("Financial Manager")
+        self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
+        self.notifyInitiator("Operations Manager")
         return True
 
     @api.one
     def procurement_manager_approval(self):
-        self.write({'state': 'f_m_approve',
+        self.write({'state': 'o_m_approve',
                     'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
+        self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
         self.notifyInitiator("Procurement Manager")
         return True
 

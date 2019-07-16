@@ -16,15 +16,15 @@
                     <button name="button_approve" type="object" states="to approve" string="Approve IRF" class="oe_highlight" groups="purchase.group_purchase_manager" />
                     <!-- <button name="action_irf_send" states="purchase,done" string="Send IRF by Email" type="object" context="{'send_irf':False}" /> -->
                     <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
-                    <button name="button_cancel" states="f_m_approve,o_m_approve,p_m_approve,draft,purchase" string="Cancel" type="object" />
+                    <button name="button_cancel" states="o_m_approve,f_m_approve,p_m_approve,draft,purchase" string="Cancel" type="object" />
                     <button name="button_done" type="object" string="Lock" states="purchase" />
                     
                     <!-- start additional approval -->
-                    <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
                     <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="o_m_approve" groups="kijabe_purchase_ext.purchase_operation_id" />
+                    <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
                     <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="p_m_approve" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
                     <!-- end -->
-                    <field name="state" widget="statusbar" statusbar_visible="f_m_approve,o_m_approve,p_m_approve,draft,purchase" readonly="1" />
+                    <field name="state" widget="statusbar" statusbar_visible="o_m_approve,f_m_approve,p_m_approve,draft,purchase" readonly="1" />
                 </header>
                 <sheet>
                     <div class="oe_title">

@@ -1,0 +1,23 @@
+/* This is a custom css file for PO and RFQ reports */
+
+.watermark {
+    position: absolute;
+    opacity: 0.25;
+    font-size: 3em;
+    width: 100%;
+    text-align: center;
+    z-index: 1000;
+    transform: rotate(300deg);
+    -webkit-transform: rotate(300deg);
+}
+
+.watermark>img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+.table.table-condensed>thead {
+    background-color: #92d300;
+}

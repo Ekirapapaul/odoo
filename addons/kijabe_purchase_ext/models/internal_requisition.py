@@ -17,15 +17,11 @@ class internal_requisition(models.Model):
     ir_dept_head_id = fields.Char('Department Head', readonly=True, store=True)
     ir_req_date = fields.Datetime(
         string='Date', required=True, index=True, default=fields.Datetime.now)
-    ir_div_id = fields.Char('Division', readonly=True, store=True)
-    ir_div_code = fields.Char('Division Code', readonly=True, store=True)
 
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'IRF Sent'),
-        ('o_m_approve', 'Operations'),
-        ('f_m_approve', 'Finance'),
-        ('p_m_approve', 'Procurement'),
+        ('to approve', 'WH Manager'),
         ('purchase', 'Approved'),
         ('done', 'Approved & Locked'),
         ('cancel', 'Cancelled')
@@ -45,21 +41,15 @@ class internal_requisition(models.Model):
     def _populate_dep_code(self):
         self.ir_dept_code = self.ir_dept_id.dep_code
         self.ir_dept_head_id = self.ir_dept_id.dep_head_id.name
-        self.ir_div_id = self.ir_dept_id.dep_id.name
-        self.ir_div_code = self.ir_dept_id.dep_id.div_code
         return {}
 
     @api.model
     def create(self, vals):
         department = self.env["purchase.department"].search(
             [['id', '=', vals['ir_dept_id']]])
-        division = self.env["purchase.division"].search(
-            [['department_ids', '=', vals['ir_dept_id']]])
 
         vals['ir_dept_code'] = department.dep_code
         vals['ir_dept_head_id'] = department.dep_head_id.name
-        vals['ir_div_id'] = division.name
-        vals['ir_div_code'] = division.div_code
 
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code(
@@ -70,31 +60,10 @@ class internal_requisition(models.Model):
     def button_confirm(self):
         for order in self:
             if order.state in ['draft', 'sent']:
-                self.write({'state': 'o_m_approve',
+                self.write({'state': 'to approve',
                             'date_approve': fields.Date.context_today(self)})
                 self.notifyUserInGroup(
-                    "kijabe_purchase_ext.purchase_operation_id")
-        return True
-
-    @api.one
-    def financial_manager_approval(self):
-        self.write({'state': 'p_m_approve',
-                    'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
-        return True
-
-    @api.one
-    def operations_manager_approval(self):
-        self.write({'state': 'f_m_approve',
-                    'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup(
-            "kijabe_purchase_ext.purchase_finance_id")
-        return True
-
-    @api.one
-    def procurement_manager_approval(self):
-        self.button_approve()
-        self.notifyInitiator("Procurement Manager")
+                    "stock.group_stock_manager")
         return True
 
     @api.multi

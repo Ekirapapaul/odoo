@@ -2,7 +2,7 @@
     'name': 'KIJABE-PURCHASE-EXT',
     'description': 'Extend purchase module to add custom modifications for Kijabe odoo implementation',
     'author': 'Mupagasi Jean Paul',
-    'depends': ['purchase'],
+    'depends': ['purchase','stock'],
     'summary':'Extension of Purchase module',
     'website':'https://cure.org/',
     'data': 

@@ -20,8 +20,17 @@ class purchase(models.Model):
     # Add new field
     x_dept_id = fields.Many2one(
         'purchase.department', 'Department')
-    x_division = fields.Char('Division', readonly=True, store=True)
-
+    x_division = fields.Char('Division',
+                             readonly=True,
+                             store=True)
+    x_dept_code = fields.Char('Dept Code',
+                              readonly=True,
+                              store=True
+                              )
+    x_div_code = fields.Char('Division Code',
+                              readonly=True,
+                              store=True
+                              )
     # Modify existing fields display name
     partner_id = fields.Many2one(string=u'Supplier')
     partner_ref = fields.Char(string=u'Supplier Code')
@@ -41,6 +50,9 @@ class purchase(models.Model):
     @api.onchange('x_dept_id')
     def _populate_div(self):
         self.x_division = self.x_dept_id.dep_id.name
+        self.x_div_code = self.x_dept_id.dep_id.div_code
+        self.x_dept_code = self.x_dept_id.dep_code
+
         return {}
 
     @api.model

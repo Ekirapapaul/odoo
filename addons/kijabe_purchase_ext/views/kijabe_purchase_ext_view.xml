@@ -7,14 +7,15 @@
         <field name="inherit_id" ref="purchase.purchase_order_form" />
         <field name="arch" type="xml">
             <!-- Adding the new field created in our model -->
-            <field name="date_order" position="after">
-                <field name="x_dept_id" />
+            <field name="company_id" position="after">
                 <field name="x_division" />
-                
+                <field name="x_div_code" />
             </field>
             <!-- partner_ref -->
             <field name="partner_ref" position="after">
                 <field name="irf_ids" />
+                <field name="x_dept_id" />
+                <field name="x_dept_code" />
             </field>
             <!-- Modififying the existing field to make it invisible -->
             <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="attributes">
@@ -33,7 +34,9 @@
             <!-- Add new column (x_division) -->
             <field name="date_order" position="after">
                 <field name="x_dept_id" />
+                <field name="x_dept_code" />
                 <field name="x_division" />
+                <field name="x_div_code" />
                 <field name="irf_ids" />
             </field>
         </field>

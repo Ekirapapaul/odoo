@@ -17,6 +17,7 @@ Main feature:
 
 class purchase(models.Model):
     _inherit = 'purchase.order'
+    
     # Add new field
     x_dept_id = fields.Many2one(
         'purchase.department', 'Department')
@@ -59,7 +60,12 @@ class purchase(models.Model):
     def create(self, vals):
         division = self.env["purchase.division"].search(
             [['department_ids', '=', vals['x_dept_id']]])
+        department = self.env["purchase.department"].search([['id', '=', vals['x_dept_id']]])
+        
+        vals['x_dept_code'] = department.dep_code
         vals['x_division'] = division.name
+        vals['x_div_code'] = division.div_code
+
         return super(purchase, self).create(vals)
 
     @api.one

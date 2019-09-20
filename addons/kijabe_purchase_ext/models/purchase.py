@@ -92,7 +92,6 @@ class purchase(models.Model):
                              'date_approve': fields.Date.context_today(self)})
                 self.notifyUserInGroup(
                     "kijabe_purchase_ext.purchase_director_id")
-                self.notifyInitiator("Financial Manager")
 
         return True
 
@@ -101,7 +100,6 @@ class purchase(models.Model):
         self.write({'state': 'f_m_approve',
                     'date_approve': fields.Date.context_today(self)})
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
-        self.notifyInitiator("Operations Manager")
         return True
 
     @api.one
@@ -109,7 +107,6 @@ class purchase(models.Model):
         self.write({'state': 'o_m_approve',
                     'date_approve': fields.Date.context_today(self)})
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
-        self.notifyInitiator("Procurement Manager")
         return True
 
     @api.multi

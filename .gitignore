@@ -33,3 +33,9 @@ install/win32/meta.py
 /share/
 /src/
 odoo.conf
+
+#ignore odoo addons that have made for other implementations other than cure
+/addons/event_barcode
+/addons/event_registration_multi_qty
+/addons/irebero
+.gitignore

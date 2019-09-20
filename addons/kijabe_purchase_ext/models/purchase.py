@@ -84,7 +84,7 @@ class purchase(models.Model):
             if order.company_id.po_double_validation == 'one_step'\
                     or (order.company_id.po_double_validation == 'two_step'
                         and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
-                    or order.user_has_groups('purchase.group_purchase_manager'):
+                    or order.user_has_groups('kijabe_purchase_ext.purchase_director_id'):
                 order.button_approve()
                 self.notifyInitiator("Financial Manager")
             else:

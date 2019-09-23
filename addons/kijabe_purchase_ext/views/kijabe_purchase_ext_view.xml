@@ -23,8 +23,22 @@
                     <attribute name="invisible">1</attribute>
                 </field>
             </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="attributes">
+                <field name="name" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom']" position="attributes">
+                <field name="product_uom" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
+                <field name="x_details"/>
+            </xpath>
         </field>
     </record>
+
     <!-- Extend the existing view -->
     <record id="view_tree_kijabe_purchase_ext" model="ir.ui.view">
         <field name="name">Kijabe Purchase Ext Tree</field>

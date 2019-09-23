@@ -2,6 +2,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import odoo.addons.decimal_precision as dp
+from datetime import datetime
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -12,7 +13,8 @@ class internal_requisition(models.Model):
     _inherit = ['mail.thread', 'ir.needaction_mixin']
     _description = "Internal Requisition"
 
-    ir_dept_id = fields.Many2one('purchase.department', 'Department', required=True)
+    ir_dept_id = fields.Many2one(
+        'purchase.department', 'Department', required=True)
     ir_dept_code = fields.Char('Department Code', readonly=True, store=True)
     ir_dept_head_id = fields.Char('Department Head', readonly=True, store=True)
     ir_req_date = fields.Datetime(
@@ -35,7 +37,6 @@ class internal_requisition(models.Model):
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
     date_approve = fields.Date(
         'Approval Date', readonly=1, index=True, copy=False)
-    
 
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
@@ -64,7 +65,7 @@ class internal_requisition(models.Model):
                             'date_approve': fields.Date.context_today(self)})
                 self.notifyUserInGroup(
                     "stock.group_stock_manager")
-        return True
+        return {}
 
     @api.multi
     def button_approve(self, force=False):
@@ -72,13 +73,54 @@ class internal_requisition(models.Model):
             {'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
         self.filtered(
             lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+        for item in self.item_ids:
+            if item.product_qty > item.qty_available:
+                raise UserError(str(item.item_id.name)+' is out of stock, remaining stock is:'+str(item.qty_available))
+        self._init_stock_move()
+        self.notifyInitiator("Stock Manager")
+        return {}
+
+    def _init_stock_move(self):
+        sp_types = self.env['stock.picking.type'].search(
+            [('code', '=', 'internal')])
+        # Initiate a stock pick
+        for prod in self.item_ids:
+            move = self.env['stock.move'].create({
+                'name': str(prod.item_id.name),
+                'location_id': self.ir_dept_id.location.location_id.id,
+                'location_dest_id': self.ir_dept_id.location.id,
+                'product_id': prod.item_id.id,
+                'product_uom': prod.item_id.uom_id.id,
+                'product_uom_qty': prod.product_qty,
+                'picking_type_id': sp_types[0].id,
+            })
+            picking = self.env['stock.picking'].create({
+                'state': 'draft',
+                'location_id': self.ir_dept_id.location.location_id.id,
+                'location_dest_id': self.ir_dept_id.location.id,
+                'origin': self.name,
+                'move_type': 'direct',
+                'picking_type_id': sp_types[0].id,
+                'picking_type_code': sp_types[0].code,
+                'quant_reserved_exist': False,
+                'min_date': datetime.today(),
+                'priority': '1',
+                'company_id': prod.item_id.company_id.id,
+            })
+            picking.move_lines = move
+            picking.action_confirm()
+            picking.force_assign()
+            picking.pack_operation_product_ids.write(
+                {'qty_done': prod.product_qty})
+            picking.do_new_transfer()
+
         return {}
 
     @api.multi
     def button_cancel(self):
         self.write({'state': 'cancel'})
         return {}
-    
+
     @api.multi
     def button_draft(self):
         self.write({'state': 'draft'})
@@ -89,8 +131,6 @@ class internal_requisition(models.Model):
     def notifyUserInGroup(self, group_ext_id):
         group = self.env.ref(group_ext_id)
         for user in group.users:
-            _logger.error("Notify User `%s` In Group `%s`" %
-                          (str(user.login), group.name))
             self.sendToManager(user.login, self[0].name, user.name)
         return True
 
@@ -137,7 +177,24 @@ class internal_requisition(models.Model):
 class purchase_internal_requisition_items(models.Model):
     _name = "purchase.internal.requisition.item"
     ir_item_id = fields.Many2one('purchase.internal.requisition')
-    item_id = fields.Many2one('product.template', string='Item')
-    product_qty = fields.Float(string='Quantity', digits=dp.get_precision(
+    item_id = fields.Many2one('product.product', string='Item')
+    qty_available = fields.Float('Available Quantity',
+                                 store=True,
+                                 )
+    product_qty = fields.Float(string='Quantity To Order', digits=dp.get_precision(
         'Product Unit of Measure'), required=True)
     comment = fields.Text("Comment")
+
+    @api.onchange('item_id')
+    def _get_qty(self):
+        self.qty_available = self.compute_remain_qty(self.ir_item_id)
+        return {}
+
+    def compute_remain_qty(self, item):
+        stock_qty_obj = self.env['stock.quant']
+        stock_qty_lines = stock_qty_obj.search([('product_id', '=', self.item_id.id), (
+            'location_id', '=', self.ir_item_id.ir_dept_id.location.location_id.id)])
+        total_qty = 0
+        for quant in stock_qty_lines:
+            total_qty += quant.qty
+        return total_qty

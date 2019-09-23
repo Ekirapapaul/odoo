@@ -19,3 +19,4 @@ class department(models.Model):
     name = fields.Char('Name')
     dep_code = fields.Char('Code')
     dep_head_id = fields.Many2one('res.users', 'Department Head')
+    location = fields.Many2one('stock.location',domain=[('usage', '=', 'internal')])

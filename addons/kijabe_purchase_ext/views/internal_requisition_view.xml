@@ -37,9 +37,12 @@
                     <notebook>
                         <page name="items" string="Items">
                             <field name="item_ids" widget="one2many_list">
-                                <tree editable="bottom">
-                                    <field name="item_id" />
-                                    <field name="product_qty" />
+                                <tree editable="bottom" delete="1" colors="red:qty_available &lt; product_qty">
+                                    <field name="item_id" 
+                                    domain="[('type', '!=', 'service')]"
+                                     />
+                                    <field name="qty_available"/>
+                                    <field name="product_qty"/>
                                     <field name="comment" />
                                 </tree>
                             </field>
@@ -79,6 +82,7 @@
                                     <field name="name" />
                                     <field name="dep_code" />
                                     <field name="dep_head_id" />
+                                    <field name="location"/>
                                 </tree>
                             </field>
                         </page>

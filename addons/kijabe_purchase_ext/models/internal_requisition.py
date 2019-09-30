@@ -119,6 +119,7 @@ class internal_requisition(models.Model):
     @api.multi
     def button_cancel(self):
         self.write({'state': 'cancel'})
+        self.notifyInitiatorCancel(self.env.user.name)
         return {}
 
     @api.multi
@@ -158,6 +159,13 @@ class internal_requisition(models.Model):
         return True
 
     @api.multi
+    def notifyInitiatorCancel(self, approver):
+        user = self.env["res.users"].search(
+            [['id', '=', self[0].create_uid.id]])
+        self.sendToInitiatorCancel(user.login, self[0].name, user.name, approver)
+        return True
+
+    @api.multi
     def sendToInitiator(self, recipient, po, name, approver):
         url = self.env['ir.config_parameter'].get_param('web.base.url')
         mail_pool = self.env['mail.mail']
@@ -169,6 +177,22 @@ class internal_requisition(models.Model):
         values.update({'body_html':
                        'To ' + name + ',<br>'
                        + 'IRF No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
+
+        self.env['mail.mail'].create(values).send()
+        return True
+        
+    @api.multi
+    def sendToInitiatorCancel(self, recipient, po, name, approver):
+        url = self.env['ir.config_parameter'].get_param('web.base.url')
+        mail_pool = self.env['mail.mail']
+        values = {}
+        values.update({'subject': 'Internal Requisition order #' +
+                       po + ' cancelled'})
+        values.update({'email_from': "odoomail.service@gmail.com"})
+        values.update({'email_to': recipient})
+        values.update({'body_html':
+                       'To ' + name + ',<br>'
+                       + 'IRF No. ' + po + ' has been cancelled by ' + str(approver)+'. You can find the details: '+url})
 
         self.env['mail.mail'].create(values).send()
         return True

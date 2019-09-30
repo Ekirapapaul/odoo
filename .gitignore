@@ -38,4 +38,5 @@ odoo.conf
 /addons/event_barcode
 /addons/event_registration_multi_qty
 /addons/irebero
+/addons/firebase_integration
 .gitignore

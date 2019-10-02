@@ -12,6 +12,8 @@
                     <button name="button_approve" type="object" states="to approve" string="Approve IRF" class="oe_highlight" groups="stock.group_stock_manager" />
                     <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
                     <button name="button_cancel" states="to approve,draft,purchase" string="Cancel" type="object" />
+                    <button name="load_duplicate_prod" type="object" string="Load Duplicate" class="oe_highlight" groups="base.group_system" />
+                    <button name="load_file_prod" type="object" string="Load from file" class="oe_highlight" groups="base.group_system"/>
                     <button name="button_done" type="object" string="Lock" states="purchase" />
                     
                     <field name="state" widget="statusbar" statusbar_visible="to approve,draft,purchase" readonly="1" />
